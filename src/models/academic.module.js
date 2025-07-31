@@ -63,3 +63,4 @@ const academicSchema = new mongoose.Schema({
 });
 
 const Academic = mongoose.model("Academic", academicSchema);
+module.exports = Academic;

@@ -1,86 +1,103 @@
 const express = require("express");
-const Client = require("../models/client.module");
 const router = express.Router();
+const Client = require("../models/client.module");
+const { nanoid } = require("nanoid");
 
-// POST | create student
+// CREATE STUDENT
 router.post("/students/create", async (req, res) => {
-    try {
-        //     Bekzod       ""       +998946150908 2132131231 male
-        const { firstName, lastName, phone, password, gender } = req.body
+  try {
+    const { firstName, lastName, phone, gender } = req.body;
 
-        // validation 
-        if(!firstName || !lastName || !phone || !password || !gender) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
-        // "+998993151516".length // 13
-        if(phone.length !== 13) {
-            return res.status(400).json({ message: "Telefon raqam 13 ta belgidan iborat bo'lishi kerak" });
-        }
-
-        const existingClient = await Client.find({ phone })
-
-        if(!existingClient) {
-            return res.status(400).json({ message: "Bu telefon raqam bilan mijoz mavjud" });
-        }
-
-        const newStudent = new Client({
-            firstName,
-            lastName,
-            phone,
-            password, // Parolni xotiraga saqlashdan oldin hash qilish kerak
-            gender,
-            role: "student",
-        })
-
-        const newParent = new Client({
-            firstName,
-            lastName,
-            phone,
-            password, // Parolni xotiraga saqlashdan oldin hash qilish kerak
-            gender,
-            role: "parent",
-        })
-
-        await newParent.save();
-        await newStudent.save();
-
-        res.status(201).json({ message: "Mijoz muvaffaqiyatli qo'shildi", student: newStudent, parent: newParent });
-
-    } catch(error) {
-        res.status(500).json({ message: "Server error", error });
+    if (!firstName || !lastName || !phone || !gender) {
+      return res.status(400).json({ message: "Barcha maydonlar kerak" });
     }
-})
 
-// POST | login student
+    if (!/^\+998\d{9}$/.test(phone)) {
+      return res.status(400).json({ message: "Telefon raqam noto‘g‘ri formatda" });
+    }
 
+    const exists = await Client.findOne({ phone });
+    if (exists) {
+      return res.status(409).json({ message: "Bu telefon raqam allaqachon ro‘yxatda" });
+    }
+
+    const generatedPassword = nanoid(6);
+
+    const newStudent = new Client({
+      firstName,
+      lastName,
+      phone,
+      gender,
+      role: "student",
+      password: generatedPassword,
+    });
+
+    await newStudent.save();
+
+    res.status(201).json({
+      message: "Student muvaffaqiyatli yaratildi",
+      student: {
+        id: newStudent._id,
+        phone: newStudent.phone,
+        coreId: newStudent.coreId,
+        password: generatedPassword,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server xatosi", error: err });
+  }
+});
+
+// LOGIN
 router.post("/students/login", async (req, res) => {
-    try{
-        const { phone, password } = req.body;
-        if(!phone || !password) {
-            return res.status(400).json({ message: "Telefon raqam va parolni kiriting" });
-        }
-        if(phone.length !== 13) {
-            return res.status(400).json({ message: "Telefon raqam 13 ta belgidan iborat bo'lishi kerak" });
-        }
-        const existingClient = await Client.findOne({ phone , password });
-        if(!existingClient) {
-            return res.status(400).json({ message: "Telefon raqam yoki parol noto'g'ri" });
-        }
-        res.status(200).json({ message: "muvafaqqiyatli kirdingiz", student: existingClient });
-    }catch(error) {
-        res.status(500).json({ message: "Server error", error });
+  try {
+    const { phone, password } = req.body;
+
+    if (!phone || !password) {
+      return res.status(400).json({ message: "Telefon va parol kerak" });
     }
-})
+
+    const user = await Client.findOne({ phone });
+    if (!user || user.password !== password) {
+      return res.status(401).json({ message: "Telefon yoki parol noto‘g‘ri" });
+    }
+
+    res.status(200).json({
+      message: "Kirish muvaffaqiyatli",
+      student: {
+        id: user._id,
+        coreId: user.coreId,
+        fullName: `${user.firstName} ${user.lastName}`,
+        phone: user.phone,
+        gender: user.gender,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server xatosi", error: err });
+  }
+});
+
+// GET all students
+router.get("/students", async (req, res) => {
+  try {
+    const students = await Client.find({ role: "student" });
+    res.status(200).json(students);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
+
+// GET students by group
+router.get("/students/group/:groupId", async (req, res) => {
+  try {
+    const students = await Client.find({ group: req.params.groupId, role: "student" });
+    res.status(200).json(students);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err });
+  }
+});
 
 
 
-// GET | get all students
-
-// GET | get all students by group
-
-// GET | get student by id
-// GET | get student by phone
-// GET | get student by course
-
-// DELETE | delete student by id
-// PUT | update student by id
+module.exports = router;
