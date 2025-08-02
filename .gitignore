@@ -1,2 +1,60 @@
-node_modules
+# node_modules – зависимости проекта
+node_modules/
+
+# сборочные файлы
+build/
+dist/
+
+# временные файлы системы
+.DS_Store
+Thumbs.db
+
+# локальные настройки среды разработки
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# лог-файлы
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# кеш менеджеров пакетов
+.pnpm-debug.log
+.cache/
+.vite/
+
+# редакторы и IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# coverage от тестов
+coverage/
+
+# misc
+*.tgz
+*.log
+*.bak
+*.swp
+
+# eslint cache
+.eslintcache
+
+# parcel / other bundlers
+.parcel-cache/
+
+# firebase / vercel / netlify
+.firebaserc
+.firebase/
+.vercel/
+.netlify/
+
+# локальные сертификаты
+*.pem
+*.crt
+*.key
