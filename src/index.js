@@ -4,6 +4,7 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const clientRouter = require('./router/clientRouter');
 const academicRouter = require('./router/academicRouter');
+const groupRouter = require('./router/groupRouter');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -21,6 +22,7 @@ app.use('/api', clientRouter)
 
 // http:/localhost:5000/api/academic/create
 app.use("/api", academicRouter);
+app.use("/api", groupRouter)
 
 // Start the server
 app.listen(PORT, () => {

@@ -98,6 +98,4 @@ router.get("/students/group/:groupId", async (req, res) => {
   }
 });
 
-
-
 module.exports = router;
