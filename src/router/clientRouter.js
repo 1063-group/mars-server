@@ -92,7 +92,7 @@ router.get("/student/group/:id", async (req, res) => {
     }
 })
 
-// get student by ID
+// get student by IDsdfdsfdsfds
 
 router.get("/student/:id", async (req, res) => {
     try {
